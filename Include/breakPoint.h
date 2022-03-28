@@ -9,6 +9,8 @@
 #include <sys/wait.h>
 #include <elf.h>
 
+#include "signaux.h"
+
 int waitchild(pid_t pid);
 unsigned long addBp(pid_t pid, unsigned long address);
 void removebp(pid_t pid, unsigned long address, unsigned long original);

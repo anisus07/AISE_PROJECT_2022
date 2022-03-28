@@ -20,6 +20,13 @@ int waitchild(pid_t pid)
     {
         return 0;
     }
+    else if (WIFSIGNALED(status))
+    {
+        // gestion des signaux
+        siginfo_t siginfo = ptrace_getsiginfo(pid);
+        ptrace_signal(siginfo);
+        return 2;
+    }
     else if (WIFEXITED(status))
     {
         return 1;

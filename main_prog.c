@@ -16,7 +16,7 @@
 void showInfo()
 {
 
-    //Fonction pour Afficher le pid, ppid, gid et le chemin de notre fichier
+    // Fonction pour Afficher le pid, ppid, gid et le chemin de notre fichier
     char path[400];
     getcwd(path, 400);
     printf("------------------------------------------------------------------------------------------------------------\n");
@@ -31,14 +31,9 @@ void showInfo()
     fflush(stdout);
     printf("------------------------------------------------------------------------------------------------------------\n");
 }
-void showMemory()
-{
-    //fonction affich() qui fais appelle à la librarie memory
-    affic();
-}
 static int shared_lib(struct dl_phdr_info *info, size_t size, void *data)
 {
-    //fonction qui permet d'afficher la liste des bibliothèques chargées
+    // fonction qui permet d'afficher la liste des bibliothèques chargées
     int j;
 
     printf("name=%s (%d segments)\n", info->dlpi_name,
@@ -57,7 +52,7 @@ void showVariablesFunctions()
 
 void showMenu()
 {
-    //fonction pour afficher le menu
+    // fonction pour afficher le menu
     printf("\n\n");
     printf("  #####################################################\n");
     printf("     1.  Informations générales\n");
@@ -87,10 +82,11 @@ void Affichage()
         switch (c)
         {
         case 1:
-            showInfo(); //Pour le processus pere
+            showInfo(); // Pour le processus pere
             break;
         case 2:
-            showMemory();
+            // fonction affich() qui fais appelle à la librarie memory
+            affic();
             break;
         case 3:
             dl_iterate_phdr(shared_lib, NULL);
@@ -99,6 +95,9 @@ void Affichage()
 
         case 4:
             showVariablesFunctions();
+            break;
+        default:
+            c = 0;
             break;
         }
 
@@ -113,40 +112,25 @@ int main(int argc, char **argv)
         printf("Forgot an argument\n");
     }
 
-    Affichage();
-
     pid_t child = fork();
     if (child == 0)
     {
         ptrace(PTRACE_TRACEME, 0, NULL, NULL);
-        execvp(argv[1], argv);
+        execvp(argv[1], argv + 1);
     }
     else
     {
 
-        char adress_size[100];
-
-        // gestion des signaux
-        struct sigaction sa;
-
-        sa.sa_sigaction = (void *)bt_sighandler;
-        sigemptyset(&sa.sa_mask);
-        sa.sa_flags = SA_RESTART | SA_SIGINFO;
-
-        sigaction(SIGSEGV, &sa, NULL);
-        sigaction(SIGFPE, &sa, NULL);
-        sigaction(SIGXCPU, &sa, NULL);
-        sigaction(SIGPIPE, &sa, NULL);
-        sigaction(SIGXFSZ, &sa, NULL);
-
-
         waitchild(child);
         ptrace(PTRACE_CONT, child, NULL, NULL);
+        Affichage();
+
+        char adress_size[100];
 
         // entrer l'adresse du breakpoint
         scanf("%s", adress_size);
 
-        //unsigned long physical_adress = getTracedRAMAddress(child);
+        // unsigned long physical_adress = getTracedRAMAddress(child);
 
         const unsigned long bpAddress = strtol(adress_size, NULL, 16);
 
@@ -176,6 +160,10 @@ int main(int argc, char **argv)
 
             ptrace(PTRACE_CONT, child, NULL, NULL);
         }
+
+        // gestion des signaux
+        siginfo_t siginfo = ptrace_getsiginfo(child);
+        ptrace_signal(siginfo);
     }
 
     return 0;
