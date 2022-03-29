@@ -19,8 +19,18 @@
     
 # Execution de notre programme:
  
-    $ ./main_prog
-
+    $ ./main
+# Execution de nos tests:
+    Pour testé la mémoire
+        $ make run
+        $ make run5 
+    Pour testé la stack
+        $ make run6
+    Pour testé les Breakpoint
+        $ make run4
+    Pour testé le segfault
+        $ make run3
+    
 # Liste des fonctionnalités:
  
     1. Informations de bases du processus (PID, PPID, GID et la localisation du programme)
